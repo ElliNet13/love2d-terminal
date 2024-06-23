@@ -1,5 +1,3 @@
--- main.lua
-
 function love.load()
     love.window.setTitle("Love2D Terminal by ElliNet13")
     love.window.setMode(800, 600, {
@@ -74,17 +72,22 @@ function Terminal:new()
 end
 
 function Terminal:processInput()
-    -- Display current input in output (echo)
-    self:addOutput("> " .. self.input)
+    local trimmedInput = self.input:match("^%s*(.-)%s*$")  -- Trim leading and trailing spaces
+    if trimmedInput == "clear" then
+        self:clearTerminal()
+    elseif trimmedInput ~= "" then
+        -- Display current input in output (echo)
+        self:addOutput("> " .. self.input)
 
-    -- Execute command and capture output and error
-    local success, output, errorOutput = self:executeCommand(self.input)
+        -- Execute command and capture output and error
+        local success, output, errorOutput = self:executeCommand(trimmedInput)
 
-    -- Display command output or error
-    if success then
-        self:addOutput(output)
-    else
-        self:addOutput("Error: " .. errorOutput)
+        -- Display command output or error
+        if success then
+            self:addOutput(output)
+        else
+            self:addOutput("Error: " .. errorOutput)
+        end
     end
 
     -- Clear input after processing
@@ -126,12 +129,14 @@ function Terminal:addOutput(line)
     end
 end
 
+function Terminal:clearTerminal()
+    -- Clear all output lines
+    self.output = {}
+end
+
 function Terminal:draw()
     love.graphics.setColor(1, 1, 1)  -- Text color (white)
     love.graphics.setFont(love.graphics.newFont(self.fontSize))
-
-    -- Draw title
-    love.graphics.print("Love2D Terminal by ElliNet13", 10, 10)
 
     -- Draw all output lines
     local startY = 30
